@@ -1,0 +1,151 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.5s ease;
+}
+
+.project-image {
+    border: 1px solid #ddd;
+    max-height: 400px;
+    object-fit: contain;
+    background-color: #f8f9fa; /* Light background for transparency if any */
+}
+
+.seven-segment-display {
+    font-family: 'Courier New', Courier, monospace; /* Monospaced font for digit look */
+    font-size: 3.5rem;
+    padding: 15px;
+    background-color: #333;
+    color: #0f0; /* Green LED color */
+    border-radius: 5px;
+    display: inline-block;
+    border: 3px solid #444;
+    box-shadow: inset 0 0 10px #000;
+    letter-spacing: 2px;
+}
+
+.seven-segment-display span {
+    transition: opacity 0.1s ease-in-out;
+}
+
+.colon-blink {
+    animation: blink-animation 1s infinite;
+}
+
+
+
+.digit-blink-active.blink-off {
+    opacity: 0.2;
+}
+
+
+@keyframes blink-animation {
+    0%, 49% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0.2;
+    }
+}
+
+.accordion-button:not(.collapsed) {
+    color: #0c63e4;
+    background-color: #e7f1ff;
+}
+
+pre {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    overflow-x: auto;
+}
+
+code.language-cpp {
+    color: #333;
+}
+
+/* Transitions */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.card {
+     transition: box-shadow 0.3s ease-in-out;
+}
+.card:hover {
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+.alarm-status-indicator {
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.alarm-status-indicator.active {
+    background-color: #dc3545; /* Red for alarm ringing */
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .seven-segment-display {
+        font-size: 2.5rem;
+    }
+    .btn-group-vertical.d-sm-block {
+        display: grid !important; /* Override d-sm-block for stacking on small screens */
+    }
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+header.bg-light {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#simulation {
+    background-color: #f8f9fa;
+}
+
+#codeModal .modal-dialog {
+    max-width: 800px;
+}
+
+#fullCodeModal .modal-dialog {
+    max-width: 90%; /* Allow wider modal for full code */
+}
+
+@media (min-width: 992px) {
+    #fullCodeModal .modal-dialog {
+        max-width: 1000px; /* Cap at 1000px for very large screens */
+    }
+}
+
+#tinkercad-link, #full-arduino-code {
+    padding: 2rem 1rem;
+    background-color: #e9ecef; /* A slightly different shade for these sections */
+    border-radius: .3rem;
+}
+
+#project-video {
+    padding: 2rem 1rem;
+    background-color: #e9ecef; /* Consistent styling */
+    border-radius: .3rem;
+}
+
+#project-video h2 {
+    color: #343a40;
+}
+
+#contributors-section {
+    padding: 2rem 1rem;
+    background-color: #e9ecef; /* Consistent styling with other call-to-action sections */
+    border-radius: .3rem;
+}
+
+#contributors-section h2, #full-arduino-code h2, #tinkercad-link h2 {
+    color: #343a40;
+}

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relógio Despertador com Arduino</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        }
+      }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">Relógio Arduino</a>
+        </div>
+    </nav>
+
+    <header class="py-5 text-center bg-light">
+        <div class="container">
+            <h1 class="display-4">Projeto A3: Relógio Despertador com Arduino</h1>
+            <p class="lead">Explore o funcionamento de um relógio despertador digital construído com Arduino, um display de 7 segmentos e botões de controle.</p>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <section id="overview" class="mb-5">
+            <h2 class="mb-4 text-center">Visão Geral do Projeto</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <img src="relogio.png" alt="Esquema do Relógio Arduino" class="img-fluid rounded shadow-sm project-image">
+                </div>
+                <div class="col-md-6 d-flex flex-column justify-content-center">
+                    <p>Este projeto demonstra como construir um relógio digital com função de despertador utilizando um microcontrolador Arduino Uno. Os principais componentes incluem:</p>
+                    <ul>
+                        <li>Arduino Uno: O cérebro do projeto.</li>
+                        <li>Display de 7 Segmentos (TM1637 ou similar com I2C): Para exibir as horas e minutos.</li>
+                        <li>Botões (Push Buttons): Para configurar a hora, o alarme e parar o despertador.</li>
+                        <li>Buzzer Piezoelétrico: Para emitir o som do alarme.</li>
+                        <li>Resistores: Para os botões (configurados como pull-up no código).</li>
+                    </ul>
+                    <p>Abaixo, você pode interagir com uma simulação do relógio e entender o código por trás de cada funcionalidade.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tinkercad-link" class="mb-5 p-4 rounded shadow-sm bg-light text-center">
+            <h2 class="mb-3">Projeto no Tinkercad</h2>
+            <p>Explore o projeto interativamente no Tinkercad, veja o circuito e o código em ação.</p>
+            <a href="https://www.tinkercad.com/things/3nUQ9szJGWD-projeto-a3-julia-m-souza/editel?returnTo=https%3A%2F%2Fwww.tinkercad.com%2Fdashboard&sharecode=MEihd-0bfmwDh7PZ8CvMYDJCmv0RbDTXV7DgYWAyXYk" class="btn btn-lg btn-success" target="_blank" rel="noopener noreferrer">
+                Acessar Projeto no Tinkercad
+            </a>
+        </section>
+
+        <section id="project-video" class="mb-5 p-4 rounded shadow-sm bg-light text-center">
+            <h2 class="mb-4">Vídeo do Projeto em Ação</h2>
+            <p class="mb-4">Veja uma demonstração do relógio despertador funcionando em um vídeo do YouTube.</p>
+            <div class="ratio ratio-16x9">
+                <iframe 
+                    src="https://www.youtube.com/embed/6otP17TNWpU" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <p class="mt-3 fst-italic text-muted">Nota: Vídeo disponibilizado no YouTube, caso não consiga vizualizar acesse o  <a href="https://www.youtube.com/watch?v=6otP17TNWpU">link</a>.</p>
+        </section>
+
+        <section id="simulation" class="mb-5 p-4 rounded shadow-sm bg-light">
+            <h2 class="mb-4 text-center">Simulação Interativa</h2>
+            <div class="card text-center shadow-sm">
+                <div class="card-header">
+                    Simulador do Relógio Despertador
+                </div>
+                <div class="card-body">
+                    <div class="seven-segment-display mb-3" id="simulated-display">
+                        <span id="sim-h1">1</span><span id="sim-h2">2</span>
+                        <span id="sim-colon" class="colon-blink">:</span>
+                        <span id="sim-m1">0</span><span id="sim-m2">0</span>
+                    </div>
+                    <p class="mb-1">Hora Atual: <strong id="current-time-info">12:00:00</strong></p>
+                    <p class="mb-1">Alarme Configurado para: <strong id="alarm-time-info">00:00</strong> (<span id="alarm-active-status">Ativo</span>)</p>
+                    <p id="alarm-status" class="alarm-status-indicator mt-2 mb-3">Alarme Desligado</p>
+                    <div class="btn-group-vertical d-grid gap-2 d-sm-block" role="group" aria-label="Controles do Relógio">
+                        <button type="button" class="btn btn-primary" id="btn-sim-hora">Alterar Hora</button>
+                        <button type="button" class="btn btn-info" id="btn-sim-alarme">Configurar Alarme</button>
+                        <button type="button" class="btn btn-success" id="btn-sim-confirmar">Confirmar</button>
+                        <button type="button" class="btn btn-danger" id="btn-sim-desligar">Parar Alarme</button>
+                    </div>
+                     <p id="sim-mode-info" class="mt-3 fst-italic text-muted">Modo: Normal</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="full-arduino-code" class="mb-5 text-center">
+            <h2 class="mb-4">Código Completo do Arduino</h2>
+            <p>Visualize o código-fonte completo utilizado no microcontrolador Arduino para este projeto.</p>
+            <button type="button" class="btn btn-lg btn-info" id="btn-show-full-code" data-bs-toggle="modal" data-bs-target="#fullCodeModal">
+                Ver Código Completo
+            </button>
+        </section>
+
+        <section id="code-explanation" class="mb-5">
+            <h2 class="mb-4 text-center">Entendendo o Código Arduino (Parte a Parte)</h2>
+            <div class="accordion" id="codeAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Bibliotecas e Variáveis Globais
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>O código começa incluindo as bibliotecas necessárias para comunicação I2C, controle gráfico e o display de 7 segmentos. Em seguida, são definidas constantes para os pinos dos botões e do buzzer, e variáveis para armazenar o tempo, configurações do alarme e o estado do sistema.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="globals">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Função <code>setup()</code>
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>A função <code>setup()</code> é executada uma vez quando o Arduino é ligado ou resetado. Ela configura os pinos dos botões como entrada (com resistores de pull-up internos ativados) e o pino do buzzer como saída. Também inicializa o display de 7 segmentos, define seu brilho e mostra o horário inicial.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="setup">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Função <code>loop()</code> - Temporização e Modos
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>A função <code>loop()</code> é o coração do programa, executando continuamente. Ela gerencia a contagem do tempo (segundos, minutos, horas) usando <code>millis()</code> para precisão. Também controla o piscar do display quando o relógio está em modo de configuração (ajuste de hora ou alarme).</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="loop-time-mode">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            Botão: Alterar Hora (<code>btnHora</code>)
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>Este trecho do código detecta o pressionamento do botão "Alterar Hora". Dependendo do modo atual, ele permite entrar no modo de ajuste de horas, incrementar as horas ou incrementar os minutos.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="btnHora">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFive">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                            Botão: Configurar Alarme (<code>btnAlarme</code>)
+                        </button>
+                    </h2>
+                    <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>Similar ao botão de alterar hora, este botão é usado para entrar no modo de configuração do alarme e para incrementar as horas e minutos do alarme.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="btnAlarme">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingSix">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                            Botão: Confirmar (<code>btnConfirmar</code>)
+                        </button>
+                    </h2>
+                    <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>O botão "Confirmar" é usado para transitar entre os estágios de configuração (de horas para minutos, de minutos para o modo normal) tanto para o ajuste do relógio quanto do alarme.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="btnConfirmar">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingSeven">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+                            Botão: Parar Alarme (<code>btnDesligar</code>)
+                        </button>
+                    </h2>
+                    <div id="collapseSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>Quando o alarme está tocando, este botão é pressionado para silenciá-lo.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="btnDesligar">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingEight">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+                            Lógica do Alarme e Melodia
+                        </button>
+                    </h2>
+                    <div id="collapseEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>Esta parte do código verifica continuamente se a hora atual coincide com a hora do alarme configurado. Se sim, e o alarme estiver ativo, uma sequência musical é tocada no buzzer. A melodia pode ser interrompida pelo botão "Parar Alarme".</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="alarmLogic">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingNine">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine" aria-expanded="false" aria-controls="collapseNine">
+                            Funções de Display (<code>mostrarDisplay</code>, <code>formatarDisplay</code>)
+                        </button>
+                    </h2>
+                    <div id="collapseNine" class="accordion-collapse collapse" aria-labelledby="headingNine" data-bs-parent="#codeAccordion">
+                        <div class="accordion-body">
+                            <p>As funções <code>mostrarDisplay()</code> e <code>formatarDisplay()</code> são responsáveis por atualizar o que é mostrado no display de 7 segmentos. Elas cuidam de exibir a hora correta, o horário do alarme durante a configuração, e o piscar dos dois pontos centrais ou dos dígitos sendo ajustados.</p>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#codeModal" data-code-id="displayFunctions">Ver Código e Explicação</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section id="contributors-section" class="mb-5 text-center p-4 rounded shadow-sm bg-light">
+        <h2 class="mb-3">Contribuidores do Projeto</h2>
+        <p>Conheça os membros da equipe que desenvolveram este projeto.</p>
+        <button type="button" class="btn btn-lg btn-info" data-bs-toggle="modal" data-bs-target="#contributorsModal">
+            Ver Contribuidores
+        </button>
+    </section>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2025 Projeto Relógio Arduino. Desenvolvido por Abelardo, Camila, Guilherme, Júlia, Jullyana, Luiz Gustavo, Marcos Vinícius - Ânima Educação &copy;</p>
+    </footer>
+
+    <!-- Modal para Código -->
+    <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="codeModalLabel">Detalhes do Código</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="code-modal-subtitle"></h6>
+                    <pre><code class="language-cpp" id="code-snippet-area"></code></pre>
+                    <p id="code-explanation-area"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Código Completo -->
+    <div class="modal fade" id="fullCodeModal" tabindex="-1" aria-labelledby="fullCodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fullCodeModalLabel">Código Completo do Arduino</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Este é o código completo que roda no Arduino para o projeto do relógio despertador.</p>
+                    <pre><code class="language-cpp" id="full-code-snippet-area"></code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Contribuidores -->
+    <div class="modal fade" id="contributorsModal" tabindex="-1" aria-labelledby="contributorsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contributorsModalLabel">Contribuidores do Projeto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Este projeto foi desenvolvido pelos seguintes alunos:</p>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Abelardo Andrade Silva</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 821219021
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Camilla Fernandes de Paula Almeida</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 325120201
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Guilherme Lage Andrade</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 321215835
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Júlia Miranda Souza</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 1262324748
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Jullyana Glaucia de Melo</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 324247936
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Luiz Gustavo da Silva Penachin</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 1072314062
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Marcos Vinícius Lopes do Nascimento</strong><br>
+                            Curso: Engenharia da Computação<br>
+                            RA: 13524111720
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>
